@@ -18,12 +18,18 @@
      pago.`num_comprobante` AS pago_num_comprobante,
      pago.`total_pago` AS pago_total_pago,
      pago.`fecha_emision` AS pago_fecha_emision,
-     'Alojamiento' AS descripcion,
-     '1' AS cantidad
+     'Alojamiento' AS descripcion_alojamiento,
+     '1' AS cantidad_estadia,
+     producto.`nombre` as descripcion,
+     consumo.`cantidad` as cantidad,
+     producto.`precio_venta` as precio_unitario,
+     (consumo.`cantidad`*producto.`precio_venta`) as total
 FROM
      `persona` persona INNER JOIN `cliente` cliente ON persona.`idpersona` = cliente.`idpersona`
      INNER JOIN `reserva` reserva ON cliente.`idpersona` = reserva.`idcliente`
      INNER JOIN `pago` pago ON reserva.`idreserva` = pago.`idreserva`
+     INNER JOIN `consumo` consumo on reserva.`idreserva` = consumo.`idreserva`
+     INNER JOIN `producto` producto on consumo.`idproducto` = producto.`idproducto`
 Where pago.`idpago` = $P{idpago}]]>
 	</queryString>
 	<field name="cliente" class="java.lang.String"/>
@@ -34,12 +40,16 @@ Where pago.`idpago` = $P{idpago}]]>
 	<field name="pago_num_comprobante" class="java.lang.String"/>
 	<field name="pago_total_pago" class="java.math.BigDecimal"/>
 	<field name="pago_fecha_emision" class="java.sql.Date"/>
+	<field name="descripcion_alojamiento" class="java.lang.String"/>
+	<field name="cantidad_estadia" class="java.lang.String"/>
 	<field name="descripcion" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="cantidad" class="java.lang.String">
+	<field name="cantidad" class="java.math.BigDecimal">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
+	<field name="precio_unitario" class="java.math.BigDecimal"/>
+	<field name="total" class="java.math.BigDecimal"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -159,20 +169,6 @@ Where pago.`idpago` = $P{idpago}]]>
 				<reportElement x="4" y="2" width="604" height="41" uuid="c3bb908b-2464-47cb-838a-23838ed5c758"/>
 			</rectangle>
 			<staticText>
-				<reportElement x="4" y="0" width="100" height="20" uuid="a8e8e529-2bfe-4800-8fa3-03d5417f8ae0"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<text><![CDATA[cantidad]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="104" y="0" width="220" height="20" uuid="c6a326a9-b2c7-4019-a8fd-7aa21cbe18d4"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<text><![CDATA[descripcion]]></text>
-			</staticText>
-			<staticText>
 				<reportElement x="334" y="0" width="100" height="20" uuid="57fe7127-f719-4bbc-94d3-0cdc2f0c8b5a"/>
 				<textElement>
 					<font size="14" isBold="true"/>
@@ -186,27 +182,21 @@ Where pago.`idpago` = $P{idpago}]]>
 				</textElement>
 				<text><![CDATA[Total]]></text>
 			</staticText>
+			<staticText>
+				<reportElement x="14" y="2" width="100" height="20" uuid="f6b65a3c-9fea-4fa1-a8a3-6fa8bee5f622"/>
+				<text><![CDATA[cantidad_estadia]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="136" y="2" width="100" height="20" uuid="85b8c6e7-712b-4e1c-9633-cfbfc0aa89fc"/>
+				<text><![CDATA[descripcion_alojamiento]]></text>
+			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="125" splitType="Stretch">
 			<rectangle radius="10">
-				<reportElement x="434" y="42" width="165" height="34" uuid="a4342cd2-deb0-43af-adae-3c9975285808"/>
+				<reportElement x="443" y="91" width="165" height="34" uuid="a4342cd2-deb0-43af-adae-3c9975285808"/>
 			</rectangle>
-			<textField>
-				<reportElement x="4" y="0" width="100" height="20" uuid="039e2b1c-fbbe-411a-864c-f734aa902a4d"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="104" y="0" width="220" height="20" uuid="47c9a2f9-073e-477f-96f0-71dfd905ec91"/>
-				<textElement>
-					<font size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
-			</textField>
 			<textField>
 				<reportElement x="334" y="0" width="100" height="20" uuid="8f37924e-a35a-4fe7-8cab-9bfadfb24e2b"/>
 				<textElement>
@@ -222,18 +212,34 @@ Where pago.`idpago` = $P{idpago}]]>
 				<textFieldExpression><![CDATA[$F{reserva_costo_alojamiento}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="434" y="42" width="47" height="34" uuid="8a9d331e-fc45-4738-b370-bbc4fbeb73f9"/>
+				<reportElement x="443" y="91" width="47" height="34" uuid="8a9d331e-fc45-4738-b370-bbc4fbeb73f9"/>
 				<textElement>
 					<font size="14" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Total:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="481" y="42" width="118" height="34" forecolor="#00FF00" uuid="1b468b4b-5288-4f8f-af2c-8b7ace568485"/>
+				<reportElement x="490" y="91" width="118" height="34" forecolor="#00FF00" uuid="1b468b4b-5288-4f8f-af2c-8b7ace568485"/>
 				<textElement>
 					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pago_total_pago}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="14" y="0" width="100" height="20" uuid="09d7f25a-1ddf-4972-a59a-44d235b03bcf"/>
+				<textFieldExpression><![CDATA[$F{cantidad_estadia}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="136" y="0" width="100" height="20" uuid="f291ec28-3b3a-476b-afe6-291ce3b8a1f8"/>
+				<textFieldExpression><![CDATA[$F{descripcion_alojamiento}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="14" y="32" width="100" height="20" uuid="cc49b47c-3a8e-4b02-9fea-36ffc5373b7d"/>
+				<textFieldExpression><![CDATA[$F{cantidad}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="136" y="32" width="100" height="20" uuid="3781cdad-5240-44ae-a737-42af0e8cb67b"/>
+				<textFieldExpression><![CDATA[$F{descripcion}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
